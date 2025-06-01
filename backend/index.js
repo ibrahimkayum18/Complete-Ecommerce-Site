@@ -5,6 +5,7 @@ const port = 5000;
 
 const cors = require("cors");
 app.use(cors());
+app.use(express.json());
 
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const uri = `mongodb+srv://${process.env.DB_NAME}:${process.env.DB_PASS}@cluster0.pqcfxjd.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -21,9 +22,21 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     await client.connect();
-    const projectCollection = client
+    const productsCollection = client
       .db("CompleteEcommerce")
       .collection("products");
+
+    app.get("/products", async (req, res) => {
+      const result = await productsCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/products:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await productsCollection.findOne(query);
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
